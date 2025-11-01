@@ -6,11 +6,16 @@ from datetime import datetime
 BASE_URL = "https://contractacio.gencat.cat/ca/inici"
 
 def fetch_from_gencat():
+    """
+    Scraper de la Generalitat (Gencat). Devuelve licitaciones filtradas por palabras clave.
+    """
     results = []
 
-    r = requests.get(BASE_URL)
-    if r.status_code != 200:
-        print("Error al acceder a Gencat")
+    try:
+        r = requests.get(BASE_URL, timeout=15)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        print(f"Error al acceder a Gencat: {e}")
         return results
 
     soup = BeautifulSoup(r.text, "lxml")
@@ -29,7 +34,17 @@ def fetch_from_gencat():
             })
     return results
 
+def fetch_all():
+    """
+    Combina todas las fuentes de licitaciones. Por ahora solo Gencat.
+    """
+    items = fetch_from_gencat()
+    # Más fuentes se pueden añadir así:
+    # items += fetch_from_puertos()
+    # items += fetch_from_otro_portal()
+    return items
+
 if __name__ == "__main__":
-    licitaciones = fetch_from_gencat()
+    licitaciones = fetch_all()
     for l in licitaciones:
         print(l)
